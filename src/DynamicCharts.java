@@ -39,13 +39,14 @@ public class DynamicCharts extends JPanel {
     private TimeSeries total;
     /** Time series for free memory. */
     private TimeSeries free;
+    private final long maxNumber = 100;
+    private long step = 0;
     /**
      * Creates a new application.
      *
      * @param maxAge the maximum age (in milliseconds).
      */
-    private final long maxNumber = 100;
-    private long step = 0;
+
     public DynamicCharts(int maxAge) {
         super(new BorderLayout());
 // create two series that automatically discard data more than 30
@@ -74,18 +75,20 @@ public class DynamicCharts extends JPanel {
         plot.setDomainGridlinePaint(Color.white);
         plot.setRangeGridlinePaint(Color.white);
         plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+
         domain.setAutoRange(true);
         domain.setLowerMargin(0.0);
         domain.setUpperMargin(0.0);
         domain.setTickLabelsVisible(true);
         range.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+
         JFreeChart chart = new JFreeChart("JVM Memory Usage",
                 new Font("SansSerif", Font.BOLD, 24), plot, true);
         chart.setBackgroundPaint(Color.white);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(4, 4, 4, 4),
-                BorderFactory.createLineBorder(Color.black)));
+                BorderFactory.createLineBorder(Color.green)));
         add(chartPanel);
     }
     /**
@@ -119,19 +122,20 @@ public class DynamicCharts extends JPanel {
          */
         DataGenerator(int interval) {
             super(interval, null);
+//            System.out.println(this.getClass().getName());
             addActionListener(this);
         }
-/**
- * Adds a new free/total memory reading to the dataset.
- *
- * @param event the action event.
- */
-public void actionPerformed(ActionEvent event) {
-    long f = Runtime.getRuntime().freeMemory();
-    long t = Runtime.getRuntime().totalMemory();
-    addTotalObservation(t);
-    addFreeObservation(f);
-}
+        /**
+         * Adds a new free/total memory reading to the dataset.
+         *
+         * @param event the action event.
+         */
+        public void actionPerformed(ActionEvent event) {
+            long f = Runtime.getRuntime().freeMemory();
+            long t = Runtime.getRuntime().totalMemory();
+            addTotalObservation(t);
+            addFreeObservation(f);
+        }
     }
     /**
      * Entry point for the sample application.
@@ -146,6 +150,7 @@ public void actionPerformed(ActionEvent event) {
         frame.setBounds(200, 120, 1000, 500);
         frame.setVisible(true);
         panel.new DataGenerator(100).start();
+
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
