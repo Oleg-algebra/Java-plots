@@ -1,13 +1,10 @@
-import org.jcodec.api.SequenceEncoder;
 import org.jcodec.api.awt.AWTSequenceEncoder;
-import org.jcodec.common.model.Picture;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -29,8 +26,10 @@ public class DynamicBarChart extends JPanel {
     private JFreeChart chart;
     private int counter;
     private ArrayList<BufferedImage> images = new ArrayList<>();
+    private int frameNumber = 1;
 
-    public DynamicBarChart() {
+    public DynamicBarChart(int frameNumber) {
+        this.frameNumber = frameNumber;
         setLayout(new BorderLayout());
         months.add("January");
         months.add("February");
@@ -43,9 +42,9 @@ public class DynamicBarChart extends JPanel {
         chart = ChartFactory.createBarChart(
                 "Dynamic Bar Chart",
                 "Month",
-                "Revenue Vakue, $",
+                "Revenue Value, $",
                 dataset,
-                PlotOrientation.HORIZONTAL,
+                PlotOrientation.VERTICAL,
                 true,
                 false,
                 false
@@ -95,7 +94,7 @@ public class DynamicBarChart extends JPanel {
          * @param event the action event.
          */
         public void actionPerformed(ActionEvent event) {
-            int maxFrameNumber = 110;
+
             updateDataSet();
             updateChartTitle();
             try {
@@ -106,7 +105,7 @@ public class DynamicBarChart extends JPanel {
 //                File outputfile = new File("images/saved"+counter+".png");
 //                ImageIO.write(bi, "png", outputfile);
                 counter++;      //update frame counter
-                if(counter > maxFrameNumber){
+                if(counter > frameNumber){
                     createVideo();
                     System.out.println("Video created");
                     System.exit(0);
@@ -123,7 +122,7 @@ public class DynamicBarChart extends JPanel {
         int fps = 10;
         try {
             AWTSequenceEncoder encoder = AWTSequenceEncoder.createSequenceEncoder(
-                    new File("images/video"+counter+".mp4"), fps); // 25 fps
+                    new File("images/video"+(counter-1)+".mp4"), fps); // 25 fps
             for (BufferedImage image : images) {
                 encoder.encodeImage(image);
             }
@@ -139,8 +138,12 @@ public class DynamicBarChart extends JPanel {
 
     public static void main(String[] args) {
         int interval = 50;
+        int frameNumber = 120;
+        if(args.length != 0){
+            frameNumber = Integer.parseInt(args[0]);
+        }
         JFrame frame = new JFrame("DynamicBarChart");
-        DynamicBarChart panel = new DynamicBarChart();
+        DynamicBarChart panel = new DynamicBarChart(frameNumber);
         panel.new DataGenerator(interval).start();
         frame.add(panel, BorderLayout.CENTER);
         frame.setVisible(true);
